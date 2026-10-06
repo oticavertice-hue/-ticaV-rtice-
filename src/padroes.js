@@ -15,8 +15,19 @@ export const FORMULARIO_PADRAO = [
   { id: "nome", titulo: "Seu nome", rotulo: "Nome", tipo: "texto", exemplo: "Ex.: Maria Fernanda", obrigatoria: true, fixa: true },
   {
     id: "receita", titulo: "Você já fez o exame de vista e tem a receita?", rotulo: "Receita", tipo: "opcoes", obrigatoria: true,
-    opcoes: ["Sim, já tenho a receita", "Não, gostaria de indicação de um oftalmologista", "Não, quero agendar o exame de vista"],
+    opcoes: ["Sim, já tenho a receita", "Não, ainda não tenho"],
     nota: "Se já tiver a receita, você manda a foto dela na conversa do WhatsApp, logo depois de enviar.",
+  },
+  {
+    id: "profissional", titulo: "Com quem você prefere fazer o exame?", rotulo: "Exame com", tipo: "opcoes", obrigatoria: true,
+    opcoes: ["Optometrista", "Oftalmologista", "Não sei, quero ajuda para escolher"],
+    nota: "O optometrista é especializado em medir a refração, ou seja, o seu grau (em dioptrias). O oftalmologista é o médico que cuida da saúde dos olhos.",
+    mostrar_se: { pergunta: "receita", resposta: "Não, ainda não tenho" },
+  },
+  {
+    id: "agendar", titulo: "Quer que a gente agende o exame para você?", rotulo: "Agendamento", tipo: "opcoes", obrigatoria: true,
+    opcoes: ["Sim, quero agendar", "Só quero a indicação"],
+    mostrar_se: { pergunta: "receita", resposta: "Não, ainda não tenho" },
   },
   {
     id: "usa_oculos", titulo: "Você já usa óculos ou será o primeiro?", rotulo: "Já usa óculos", tipo: "opcoes", obrigatoria: true,
@@ -82,9 +93,12 @@ export const MENSAGENS = {
 export const QUADROS_PADRAO = [
   { t: "Consultoria técnica", d: "Atendimento feito por técnica em óptica, com mais de 10 anos de experiência." },
   { t: "Embaixadora ZEISS", d: "Lentes de alta precisão, indicadas para a sua receita e a sua rotina." },
-  { t: "Exame de vista", d: "Ainda não tem receita? Indicamos o oftalmologista ou agendamos para você." },
+  { t: "Exame de vista", d: "Ainda não tem receita? Agendamos com optometrista ou indicamos o oftalmologista." },
   { t: "Ajuste e acompanhamento", d: "Medidas, ajuste da armação e adaptação acompanhada depois da entrega." },
 ];
+
+export const TEXTO_CARTAO_PADRAO =
+  "No cartão pode haver acréscimo devido ao uso do cartão, informado no atendimento. No Pix e no dinheiro não há acréscimo.";
 
 /* ---------------- Dados da loja ---------------- */
 export const CONFIG_PADRAO = {
@@ -115,6 +129,10 @@ export const CONFIG_PADRAO = {
   fotos_abertura: [],
   mostrar_precos: true,
   parcelas: 10,
+  /* aviso de acréscimo no cartão (Lei 14.183/2021 permite; o texto fala em "acréscimo informado no
+     atendimento", nunca em "taxa repassada", e destaca que Pix e dinheiro não têm acréscimo) */
+  aviso_cartao: true,
+  texto_cartao: TEXTO_CARTAO_PADRAO,
   esconder_esgotados: true,
   estoque_baixo: 2,
   formulario: FORMULARIO_PADRAO,
@@ -243,6 +261,9 @@ export function perguntaVisivel(p, respostas) {
 }
 
 export const ehPix = (opcao) => normalizar(opcao).includes("pix");
+export const ehCartao = (opcao) => /cartao|credito|debito/.test(normalizar(opcao));
+/* o aviso de acréscimo só aparece se estiver ligado em Ajustes → Preferências */
+export const textoCartao = (c) => (c.aviso_cartao ? String(c.texto_cartao || TEXTO_CARTAO_PADRAO).trim() : "");
 
 export function textoPix(c) {
   if (!c.pix_chave) return "";

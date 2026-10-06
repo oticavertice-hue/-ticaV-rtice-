@@ -89,7 +89,9 @@ Regras importantes:
   Equipe (`func`) vê só "Minha conta".
 
 **Catálogo**
-- **Abertura** em tela cheia: a logo como ela é, com as fotos da loja passando ao fundo (2,2 s, transição 0,75 s).
+- **Abertura** em tela cheia: a logo como ela é e, ao lado (no celular, embaixo), as fotos da loja numa moldura
+  em arco, claras, trocando a cada 2,2 s com transição de 0,75 s. Antes as fotos passavam ATRÁS da logo, mas a
+  placa cobria o rosto das modelos e as fotos ficavam escuras; a dona preferiu separar (06/10).
   As fotos vêm de **`ABERTURA01.jpg` a `ABERTURA06.jpg` na raiz do bucket `vertice`** (a dona subiu 4 pelo painel
   do Supabase em 06/10). Se ela escolher fotos em Ajustes → Fotos da abertura, essas passam na frente.
   Sem nenhuma foto, o fundo é a própria pedra da logo, desfocada.
@@ -114,9 +116,16 @@ Regras importantes:
 - **O formulário** veio de uma conversa com a dona: ela pergunta se o cliente já tem a receita; se não tiver,
   oferece indicação de oftalmologista ou agendamento. Com receita, pergunta se já usa óculos ou é o primeiro.
   Pergunta a idade para saber se é multifocal (a partir dos 35, mais comum depois dos 40) e quantos óculos de grau.
-  Ficou assim (editável em Ajustes → Formulário): nome · receita · já usa óculos (só se tem receita) ·
-  quantos óculos de grau · para quem · idade · como prefere seguir (ir à loja ou orçamento pelo WhatsApp) ·
-  forma de pagamento · observação.
+  Ficou assim (editável em Ajustes → Formulário): nome · receita (sim / ainda não) ·
+  **com quem prefere fazer o exame: optometrista ou oftalmologista** (só se não tem receita; com a explicação:
+  o optometrista é especializado em medir a refração/dioptria, o oftalmologista é o médico) ·
+  quer que agende (só se não tem receita) · já usa óculos (só se tem receita) · quantos óculos de grau ·
+  para quem · idade · como prefere seguir (ir à loja ou orçamento pelo WhatsApp) · forma de pagamento · observação.
+- **Acréscimo no cartão:** liga/desliga em Ajustes → Preferências, com texto editável. Ligado, o aviso aparece
+  **só no formulário, quando o cliente escolhe cartão** (crédito ou débito), num quadro amarelo embaixo das
+  formas de pagamento. Em nenhum outro lugar (preço, ficha, sacola e mensagem ficam como estavam) — a dona
+  preferiu assim. Texto padrão: "No cartão pode haver acréscimo devido ao uso do cartão, informado no
+  atendimento. No Pix e no dinheiro não há acréscimo." (seção 12 do padrão: nunca "taxa repassada").
 - **Pix:** se o cliente escolhe uma forma de pagamento com a palavra "Pix", o catálogo mostra a chave com
   botão de copiar, e a chave vai no fim da mensagem. A chave fica em Ajustes → Chave Pix.
 - **Lentes à parte**, conforme a receita: aparece na ficha, na sacola e na mensagem.
@@ -148,3 +157,9 @@ Regras importantes:
   em `/catalogo`, estilos inline. A **logo agora é a imagem original**, só recortada. Novo: estoque com
   entrada/saída e histórico com desfazer (SQL 03), formulário da ótica editável, chave Pix, círculo da
   localização mantido. A versão antiga ficou na pasta `_versao-antiga`, fora do repositório.
+- **06/10/2026 (noite):** abertura com a logo e as fotos `ABERTURA0x.jpg` num arco ao lado/embaixo (atrás da
+  logo a placa cobria as modelos). Worker renomeado de `ticav-rtice` para `oticavertice`. Formulário ganhou
+  optometrista ou oftalmologista e "quer que agende". Aviso de acréscimo no cartão com liga/desliga, só no
+  formulário quando escolhe cartão (uma versão mostrava também no preço, na ficha e na sacola; a dona achou demais).
+  Todos os mecanismos foram registrados na seção 17 do PADRAO-APLICATIVOS.md, para levar a outros apps.
+  Atenção: `Catalog.jsx` passou de 1.500 linhas — subir por Upload files.

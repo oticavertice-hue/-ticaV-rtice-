@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import * as api from "./api.js";
 import {
-  FORMULARIO_PADRAO, TIPOS_PERGUNTA, MENSAGENS, QUADROS_PADRAO, CONFIG_PADRAO, DIAS, ORDEM_SEMANA, soDigitos, foneFmt, dinheiro,
+  FORMULARIO_PADRAO, TIPOS_PERGUNTA, MENSAGENS, QUADROS_PADRAO, CONFIG_PADRAO, DIAS, ORDEM_SEMANA, TEXTO_CARTAO_PADRAO, soDigitos, foneFmt, dinheiro,
 } from "./padroes.js";
 import {
   C, S, ICONES, Modal, Botao, OURO, Campo, Interruptor, Chips, Selo, Carregando, Vazio, Credito, Linha, Miniatura,
@@ -57,7 +57,7 @@ export default function Ajustes({ cfg, bruto, admin, perfil, sessao, acoes }) {
             <Linha icone={ICONES.mensagem} titulo="Mensagens do WhatsApp" sub="O texto que o cliente envia" aoTocar={() => abrir("mensagens")} />
             <Linha icone={ICONES.foto} titulo="Fotos da abertura" sub={cfg.fotos_abertura.length ? `${cfg.fotos_abertura.length} foto(s) escolhidas aqui` : "Usando ABERTURA01 a 06 do Storage"} aoTocar={() => abrir("fotos")} />
             <Linha icone={ICONES.texto} titulo="Textos do catálogo" sub="Frase da abertura, boas-vindas e os quatro quadros" aoTocar={() => abrir("textos")} />
-            <Linha icone={ICONES.preferencias} titulo="Preferências" sub="Preços, parcelas, esgotados e aviso de estoque baixo" aoTocar={() => abrir("prefs")} />
+            <Linha icone={ICONES.preferencias} titulo="Preferências" sub={`Preços, parcelas, aviso do cartão ${cfg.aviso_cartao ? "(ligado)" : "(desligado)"}, esgotados`} aoTocar={() => abrir("prefs")} />
           </div>
 
           <div style={S.titSecao}>Sistema</div>
@@ -492,14 +492,24 @@ function Textos({ aberto, cfg, acoes, fechar }) {
    Preferências
    --------------------------------------------------------------------- */
 function Preferencias({ aberto, cfg, acoes, fechar }) {
-  const [r, setR] = useRascunho(aberto, { mostrar_precos: cfg.mostrar_precos, parcelas: String(cfg.parcelas || 0), esconder_esgotados: cfg.esconder_esgotados, estoque_baixo: String(cfg.estoque_baixo || 0) });
+  const [r, setR] = useRascunho(aberto, { mostrar_precos: cfg.mostrar_precos, parcelas: String(cfg.parcelas || 0), esconder_esgotados: cfg.esconder_esgotados,
+    estoque_baixo: String(cfg.estoque_baixo || 0), aviso_cartao: cfg.aviso_cartao !== false, texto_cartao: cfg.texto_cartao || TEXTO_CARTAO_PADRAO });
   const [salvar, salvando] = useSalvar(acoes, fechar);
   const set = (k, v) => setR((x) => ({ ...x, [k]: v }));
   return (
     <Modal aberto={aberto} aoFechar={fechar} titulo="Preferências"
       rodape={<Botao cheio {...OURO} disabled={salvando} onClick={() => salvar({ mostrar_precos: r.mostrar_precos, parcelas: parseInt(r.parcelas, 10) || 0,
-        esconder_esgotados: r.esconder_esgotados, estoque_baixo: parseInt(r.estoque_baixo, 10) || 0 })}>{salvando ? "Salvando…" : "Salvar"}</Botao>}>
+        esconder_esgotados: r.esconder_esgotados, estoque_baixo: parseInt(r.estoque_baixo, 10) || 0,
+        aviso_cartao: r.aviso_cartao, texto_cartao: r.texto_cartao.trim() || TEXTO_CARTAO_PADRAO })}>{salvando ? "Salvando…" : "Salvar"}</Botao>}>
       <Interruptor ligado={r.mostrar_precos} mudar={(v) => set("mostrar_precos", v)} rotulo="Mostrar os preços no catálogo" dica="Desligado, aparece “Consulte o valor”." />
+      <Interruptor ligado={r.aviso_cartao} mudar={(v) => set("aviso_cartao", v)} rotulo="Avisar acréscimo no cartão"
+        dica="Ligado, quando o cliente escolhe cartão no formulário aparece o aviso abaixo. Desligado, não aparece nada." />
+      {r.aviso_cartao && (
+        <Campo rotulo="Texto do aviso" dica="Fale em “acréscimo informado no atendimento” e diga que o Pix não tem acréscimo. Evite “taxa repassada” (é o que dá problema com o Procon). Confirme com o contador.">
+          <textarea className="vt-campo" rows={3} value={r.texto_cartao} onChange={(e) => set("texto_cartao", e.target.value)} style={{ resize: "vertical", lineHeight: 1.5 }} />
+          <Botao pequeno contorno cor={C.suave} style={{ marginTop: 8 }} onClick={() => set("texto_cartao", TEXTO_CARTAO_PADRAO)}>Voltar ao texto original</Botao>
+        </Campo>
+      )}
       <Interruptor ligado={r.esconder_esgotados} mudar={(v) => set("esconder_esgotados", v)} rotulo="Esconder produtos esgotados" dica="Ligado, o produto com estoque zero some do catálogo até ter entrada." />
       <Campo rotulo="Parcelamento no cartão" dica={`Mostra “ou em até ${r.parcelas || "N"}x de …” embaixo do preço. Zero para não mostrar. Exemplo: ${dinheiro(249.9)} em ${parseInt(r.parcelas, 10) || 1}x = ${dinheiro(249.9 / (parseInt(r.parcelas, 10) || 1))}.`}>
         <input className="vt-campo" inputMode="numeric" value={r.parcelas} onChange={(e) => set("parcelas", e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Ex.: 10" />

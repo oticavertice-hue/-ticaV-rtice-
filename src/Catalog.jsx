@@ -4,7 +4,7 @@ import * as api from "./api.js";
 import { SUPABASE_URL, BUCKET } from "./config.js";
 import {
   CREDITO_NOME, CREDITO_FONE, mesclarConfig, dinheiro, normalizar, foneFmt, linkWhats, linkMapa, linkRota, linkWaze,
-  linkInstagram, aplicar, statusAgora, horariosAgrupados, perguntaVisivel, ehPix, mensagemPedido,
+  linkInstagram, aplicar, statusAgora, horariosAgrupados, perguntaVisivel, ehPix, ehCartao, textoCartao, mensagemPedido,
 } from "./padroes.js";
 
 /* =====================================================================
@@ -108,6 +108,7 @@ const ICONES = {
   check: svg(<path d="M5 12.5l4.5 4.5L19 7.5" />, 18, { strokeWidth: 2.4 }),
   lixo: svg(<><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></>, 19),
   lupa: svg(<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2M11 8v6M8 11h6" /></>, 18),
+  cartao: svg(<><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M3 10h18M7 15h4" /></>, 17),
   copiar: svg(<><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></>, 18),
   compartilhar: svg(<path d="M12 3.5v11M7.5 8L12 3.5 16.5 8M5 13.5V18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4.5" />, 19),
   pin: svg(<><path d="M12 21.5s7-6 7-11.7a7 7 0 1 0-14 0c0 5.7 7 11.7 7 11.7z" /><circle cx="12" cy="9.8" r="2.5" /></>, 20),
@@ -829,6 +830,19 @@ function Preco({ p, c, grande }) {
   );
 }
 
+/* o aviso de acréscimo no cartão (liga e desliga em Ajustes → Preferências) */
+function AvisoCartao({ c, style }) {
+  const t = textoCartao(c);
+  if (!t) return null;
+  return (
+    <div style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: "12px 14px", borderRadius: 12, fontSize: 13, lineHeight: 1.5,
+      background: "#FBF1DB", border: "1px solid #E2BE6E", color: "#7A5410", animation: "vtFade .3s ease", ...style }}>
+      <span style={{ flex: "0 0 auto", color: C.ouroEsc, display: "flex", marginTop: 1 }}>{ICONES.cartao}</span>
+      <span style={{ minWidth: 0 }}>{t}</span>
+    </div>
+  );
+}
+
 function Cartao({ p, c, cat, tem, adicionar, abrir }) {
   const foto = (p.fotos || [])[0];
   const specs = especificacoes(p, cat).slice(0, 3).map((s) => s.valor).join(" · ");
@@ -1168,6 +1182,8 @@ function Pergunta({ n, p, valor, mudar, falta, c }) {
       {p.tipo === "pagamento" && Number(c.parcelas) > 1 && normalizar(valor).includes("credito") && (
         <div style={{ fontSize: 13, color: C.suave, marginTop: 10 }}>Parcelamos em até {c.parcelas}x no cartão de crédito.</div>
       )}
+      {/* aviso de acréscimo: só quando o cliente escolhe cartão, e só se estiver ligado em Ajustes */}
+      {p.tipo === "pagamento" && ehCartao(valor) && <AvisoCartao c={c} style={{ marginTop: 10 }} />}
       {falta && <div style={{ color: C.vermelho, fontSize: 13, fontWeight: 600, marginTop: 10 }}>Responda esta pergunta para continuar.</div>}
     </div>
   );
