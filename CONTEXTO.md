@@ -1,143 +1,144 @@
-# CONTEXTO · Vértice Design Óptico (vitrine + painel)
+# Vértice Design Óptico — Contexto do projeto
 
-Mantenha este arquivo atualizado ao fim de cada mudança. O histórico (seção 9) é a parte que mais salva tempo:
-ele diz o que mudou e **por quê**, para ninguém desfazer sem querer uma correção que custou caro.
-
-Segue o `PADRAO-APLICATIVOS.md` (Miguel Borges). Diferenças deste projeto em relação ao padrão estão na seção 6.
-
----
+> **Para o Claude (ou quem for continuar):** leia tudo antes de propor mudanças, junto com o
+> PADRAO-APLICATIVOS.md. Ao terminar cada mudança, atualize o "Histórico" e as seções que mudaram.
+>
+> Última atualização: 06/10/2026
 
 ## 1. O que é e para quem
 
-**Cliente:** Vértice Design Óptico, ótica em Uberlândia (MG), Av. José Abdulmassih, 1095, Loja 1, Shopping Park.
-Instagram `@verticedesign_optico`. WhatsApp (34) 9 9856-3693. Dona: técnica em óptica, embaixadora ZEISS, +10 anos de mercado.
+Ótica **Vértice Design Óptico**, em Uberlândia (Shopping Park). A dona é técnica em óptica, embaixadora
+ZEISS, com mais de 10 anos de experiência. Armações a partir de R$ 249,90.
 
-**O que é:** uma **vitrine online** (não é loja virtual: não há carrinho nem pagamento) + um **painel** para a dona subir fotos,
-organizar categorias e cadastrar as armações com as especificações. O cliente final navega, marca o coração nas peças de que gostar
-e fala com a loja pelo WhatsApp para experimentar. Ótica vende com prova na loja; por isso o botão principal é
-"Quero experimentar na loja", e não "Comprar".
+Duas partes no mesmo código:
 
-**Identidade:** preto quente, ouro champanhe e creme (tirados do logo e do Instagram). Bodoni Moda (títulos) + Jost (interface).
-Arcos e círculos remetem a lentes. A seção "Visite-nos" é uma **lente-mapa**: um círculo com anel de graduação (escala de eixo de lente),
-texto girando com o endereço e o mapa dentro.
+- **App de gestão** (com login), no endereço principal: estoque, categorias e ajustes.
+- **Catálogo público** (sem login), no endereço com **`/catalogo`**: o cliente escolhe as armações,
+  responde o formulário da ótica e envia tudo pelo WhatsApp.
 
-## 2. Onde fica cada coisa (preencher quando as contas existirem)
+## 2. Onde fica cada coisa
 
-| O quê | Valor |
-|---|---|
-| Repositório GitHub (PRIVADO) | `github.com/<usuario>/<repo>` |
-| Publicação (Cloudflare Workers) | nome do Worker = nome do repositório; endereço `https://<nome>.<conta>.workers.dev` |
-| Supabase (id do projeto) | `<id>`; SQL: `https://supabase.com/dashboard/project/<id>/sql/new` |
-| Bucket de fotos | `vertice` (público) |
-| WhatsApp da loja | 5534998563693 |
-| Crédito do programador | Miguel Borges, (34) 9 9188-1557 (rodapé da vitrine e do painel) |
-
-Chaves: só a **anon (pública)** entra em `src/config.js`. A `service_role` **nunca** entra no código nem em print.
+- **Código:** GitHub, repositório privado `vertice-vitrine`, versão `main`.
+- **Publicação:** Cloudflare Workers, Worker `vertice-vitrine` (tem que ser igual ao `name` do `wrangler.toml`).
+  Build command `npm run build` · Deploy command `npx wrangler deploy`.
+- **Banco, login e fotos:** Supabase, projeto **`yivugotnoduemjxzroqr`**.
+  SQL: `https://supabase.com/dashboard/project/yivugotnoduemjxzroqr/sql/new`
+- **Bucket das fotos:** `vertice` (público). Pastas: `produtos/`, `site/` (abertura), `categorias/`.
+- **WhatsApp dos pedidos:** (34) 9 9856-3693 — fica em Ajustes → Dados da loja (no banco, não no código).
+- **Instagram:** @verticedesign_optico.
+- **Chave pública:** `src/config.js` (publishable key). A `service_role` nunca entra no código.
 
 ## 3. Tecnologia e arquivos
 
-React 18 + Vite 5, sem TypeScript e sem biblioteca de componentes. Supabase (banco, login, fotos). Cloudflare Workers (publicação).
+React 18 + Vite 5, sem TypeScript, sem biblioteca de componentes, estilos inline com o objeto de cores `C`.
+Fontes: **Cinzel** (títulos, combina com as letras da logo) e **Montserrat** (texto), pelo Google Fonts.
 
-```
-index.html                 viewport-fit=cover, fontes, SEO, ícones
-package.json · vite.config.js · wrangler.toml
-public/                    logo-v.png (V dourado extraído da logo), logo-original.jpg, ícones, manifest, _headers
-src/main.jsx               "/" abre a vitrine; "/admin" abre o painel (carregados separados: lazy)
-src/config.js              URL e chave anon do Supabase (vazio = MODO DEMONSTRAÇÃO)
-src/api.js                 TODAS as chamadas ao banco/Storage. Tem dois motores: Supabase e demonstração (localStorage)
-src/data.js                configuração padrão da loja, categorias iniciais, guia de rosto, guia de lentes, produtos de exemplo
-src/shared.jsx             ícones, ilustração SVG das armações, Modal (padrão do celular), avisos, utilidades
-src/styles.css             tokens de cor, base do celular, botões, campos, janelas
-src/Catalog.jsx            vitrine pública: estado, filtros, composição
-src/vitrine-topo.jsx       abertura, aviso, cabeçalho, hero, faixa
-src/vitrine-secoes.jsx     promessas, ofertas, categorias, destaques, guia de rosto, guia de lentes, sobre, lente-mapa, rodapé
-src/vitrine-produto.jsx    cartão, galeria deslizante, detalhe (medidas, rostos), minha seleção
-src/vitrine-arte.jsx       ilustrações (categorias, lentes, estojo, diagrama das lentes)
-src/catalog.css            estilo da vitrine
-src/App.jsx · admin.css    painel do dono
-vertice_01_schema.sql      banco, regras, funções, bucket
-vertice_02_categorias_iniciais.sql
-```
-
-**Regra:** nenhuma tela chama o Supabase direto; tudo passa por `api.js`.
+- `src/main.jsx` — "catalogo" no endereço abre o Catálogo; o resto abre o App. Cada um carrega só o seu código.
+- `src/config.js` — endereço e chave pública do Supabase.
+- `src/api.js` — TODAS as chamadas ao banco. Encolhe a foto antes de subir, apaga arquivo de verdade.
+- `src/padroes.js` — o que o app e o catálogo usam juntos: dados padrão da loja, **formulário padrão**,
+  mensagens do WhatsApp, horários (Brasília), dinheiro, link do WhatsApp (web.whatsapp.com no computador).
+- `src/ui.jsx` — peças de tela do app: Modal (portal, dvh, teclado, trava do fundo com contador), botões, campos.
+- `src/App.jsx` — app de gestão: Login, Início, Estoque, ficha do produto, cadastro, Categorias.
+- `src/Ajustes.jsx` — todas as telas de Ajustes.
+- `src/Catalog.jsx` — o catálogo público inteiro (tem a própria cópia do Modal, com o tema escuro).
+- `public/logo.jpg` — **a logo exatamente como a cliente mandou**, só recortada (tirada a parte da loja desfocada à direita).
+- `public/emblema.jpg` — só o "V" da mesma imagem, para ícone redondo e rodapé.
+- `public/favicon.png`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `manifest.webmanifest`.
 
 ## 4. Banco
 
-Scripts, **nesta ordem, antes de subir o código** (o site novo procura colunas que precisam existir):
-1. `vertice_01_schema.sql` (rodar com Ctrl+A antes do Run). Cria tudo, inclusive o bucket `vertice` e as permissões do Storage.
-2. `vertice_02_categorias_iniciais.sql` (uma vez).
+Scripts já rodados, nesta ordem:
 
-Tabelas: `profiles` (role `admin`/`func`; o **primeiro usuário criado vira admin**, os seguintes `func`), `categorias`
-(com `campos` jsonb = as especificações), `produtos` (`specs` jsonb, `medidas` jsonb, `fotos` text[]), `banners` (Ofertas),
-`configuracoes` (linha única, jsonb com só o que a dona alterou; o resto vem de `CONFIG_PADRAO` em `data.js`), `catalog_visits`.
+1. `vertice_01_schema.sql` — perfis, categorias, produtos, banners (sem uso hoje), configurações, acessos, bucket.
+2. `vertice_02_categorias_iniciais.sql` — 6 categorias com as especificações de cada uma.
+3. `vertice_03_estoque.sql` — coluna `estoque`, tabela `movimentos`, funções `vt_mover_estoque`,
+   `vt_desfazer_movimento` e `vt_catalogo()`. Tira a leitura pública direta da tabela de produtos.
 
-Funções: `vt_is_admin()`, `vt_is_staff()`, `vt_log_visit(text)` (pública), `vt_stats()` e `vt_storage_list()` (só admin).
-Permissões do Storage: enviar, apagar e ler (3 políticas "vertice ...").
+Tabelas principais:
 
-Permissões: **admin** = tudo. **func** = cadastra/edita produtos e sobe fotos; não mexe em categorias, ofertas, ajustes, acessos,
-armazenamento, nem apaga de vez. A trava está no banco (RLS), não só na tela. Público (anon) só lê o que está `ativo` e fora da lixeira.
+- `profiles` — `role` `admin` ou `func`. **O primeiro usuário criado vira admin**; os outros entram como `func`.
+- `categorias` — `nome`, `slug`, `descricao`, `campos` (jsonb: `[{chave, rotulo, tipo: opcoes|texto|simnao, opcoes}]`), `ordem`, `ativo`, `excluida`.
+- `produtos` — `nome`, `codigo` (VT-001…), `marca`, `preco`, `preco_antigo`, `fotos` (array, a primeira é a capa),
+  `specs` (jsonb com os valores das especificações), `novo`, `destaque`, `ativo`, `estoque`, `excluida`.
+- `movimentos` — entrada/saída com `motivo`, quem fez, `estornado`, `estorno_de`.
+- `configuracoes` (id = 1) — `dados` jsonb com **só o que a dona mudou**; o resto vem de `padroes.js`.
+- `catalog_visits` — acessos (código sorteado, sem dado pessoal).
 
-Sem custo, margem ou dado sigiloso nas tabelas (RLS esconde linha, não coluna).
+Regras importantes:
+
+- O estoque só muda pelas funções (trava a linha, não deixa ficar negativo, grava o histórico).
+- O catálogo lê por `vt_catalogo()`, que diz só se o produto está **disponível**, sem mostrar a quantidade.
+- Excluir manda para a **lixeira** (`excluida`). "Apagar de vez" apaga também as fotos do servidor.
 
 ## 5. O que cada tela faz
 
-**Vitrine (`/`)**: abertura animada (1x por visita; ?p= pula) · cabeçalho que fica sólido ao rolar · hero com arco e selo girando ·
-faixa de serviços · promessas · ofertas (banners) · categorias (arcos) · destaques (trilho) · **coleção** (abas por categoria, busca,
-gênero, filtros que nascem dos campos da categoria e dos valores que existem, ordenar, "ver mais") · guia de **formato de rosto**
-(filtra a coleção) · guia de **lentes** · sobre · **Visite-nos (lente-mapa)** com horário e "aberto agora" · rodapé.
-Detalhe do produto em janela (galeria que desliza, especificações, diagrama de medidas lente-ponte-haste, rostos que combinam,
-parecidos). **Minha seleção** (favoritos em `localStorage`) → mensagem pronta no WhatsApp. Botão flutuante do WhatsApp.
-Links diretos: `/?p=<id do produto>` e `/?cat=<slug>`.
+**App**
+- **Início:** modelos, peças em estoque, esgotados, botões (novo produto, divulgar o catálogo no WhatsApp,
+  copiar o link), atenção no estoque, últimas entradas e saídas, acessos ao catálogo (só admin).
+- **Estoque:** busca, filtros (categoria, esgotados, estoque baixo, escondidos). Toque abre a **ficha**:
+  fotos, estoque, preço, especificações, **Entrada / Saída** com motivo, histórico com **desfazer**,
+  editar, esconder do catálogo, ver no catálogo, excluir (admin).
+- **Cadastro do produto:** até 6 fotos (a primeira é a capa, setas para reordenar), nome, categoria, marca,
+  código automático, preço, preço antigo (mostra o desconto), quantidade inicial, especificações da categoria,
+  descrição, "mostrar no catálogo", selo Novo, destaque. Cancelar apaga as fotos que subiram e não foram salvas.
+- **Categorias (admin):** ordem do catálogo (setas), nome, frase, mostrar/esconder e o editor das especificações.
+- **Ajustes (admin):** Dados da loja · Horários · **Chave Pix** · **Formulário do catálogo** · Mensagens do
+  WhatsApp · Fotos da abertura · Textos do catálogo · Preferências · Usuários · Espaço das fotos · Lixeira.
+  Equipe (`func`) vê só "Minha conta".
 
-**Painel (`/admin`)**: Início (pendências, acessos, armazenamento) · Produtos (formulário com fotos, especificações dinâmicas, medidas, preço)
-· Categorias (editor de especificações) · Ofertas · Ajustes (loja, horários, textos, fotos do site, mensagens do WhatsApp, lixeira, conta).
+**Catálogo**
+- **Abertura** em tela cheia: a logo como ela é, com as fotos da loja passando ao fundo (2,2 s, transição 0,75 s).
+  Sem fotos, o fundo é a própria pedra da logo, desfocada.
+- **Boas-vindas** e quatro quadros (consultoria, ZEISS, exame de vista, ajuste) — textos editáveis.
+- **Como funciona** em três passos.
+- **Coleção:** barra fixa com busca e categorias; cartões com foto, marca, especificações, preço, parcelas,
+  selos Novo / desconto / esgotado, botão da sacola.
+- **Ficha:** galeria deslizando (fotos lado a lado), foto ampliada, ficha técnica, "Tirar dúvida" no WhatsApp,
+  compartilhar o modelo (link `/catalogo?p=<id>`).
+- **Sacola** salva no navegador → **formulário da ótica** → WhatsApp.
+- **Pedir orçamento** sem escolher armação (abre o mesmo formulário).
+- **Visite a loja:** o círculo da localização (lente com escala de graus, endereço girando, mapa do Google
+  dentro com filtro escuro, pino dourado com ondas, selo aberto/fechado no horário de Brasília), horários,
+  Como chegar, Waze, WhatsApp, Instagram.
+- **Rodapé** com o crédito do programador.
 
-## 6. Regras e decisões deste cliente
+## 6. Regras de negócio da Vértice
 
-- **Sem carrinho e sem pagamento** (decisão do padrão: não há integração de pagamento). Preço é opcional por produto: vazio = "Sob consulta".
-  Em Ajustes dá para esconder todos os preços ("Consulte valores"). Parcelamento: só aparece "em até Nx no cartão" (sem prometer "sem juros").
-- **Formato de rosto** é calculado a partir da especificação `formato` da armação (tabela `ROSTOS` em `data.js`); a dona não preenche nada a mais.
-  O campo `formato` das categorias de armação não deve ter a chave trocada.
-- **Especificações por categoria**: cada categoria define seus campos (lista de opções, texto, sim/não) e quais viram filtro. Produto guarda os valores em `specs`.
-- **Foto**: encolhe sozinha para 1.400 px / WebP 0,8 antes de subir; máx. 6 por produto; apagar de verdade ao remover/trocar/excluir de vez;
-  fotos enviadas numa edição cancelada são apagadas na hora; medidor de espaço e "limpar arquivos sem uso" em Ajustes (admin).
-  Fotos ficam em subpastas: `produtos/`, `categorias/`, `banners/`, `site/`. Órfão = não pertence a nenhum cadastro (inclusive lixeira) e tem mais de 1 h.
-- **Lixeira** no lugar de excluir; "Apagar de vez" só admin e pede confirmação forte.
-- **Horário de funcionamento** vem de Ajustes e é calculado no horário de Brasília (inclui "aberto agora"). Os valores iniciais (seg-sex 09:30-18:30,
-  sáb 10:00-15:30, dom fechado) foram lidos de um destaque do Instagram: **conferir com a dona**.
-- **Mapa**: iframe do Google Maps (sem chave) filtrado em tom escuro dentro da lente, com `pointer-events: none` (não prende a rolagem no celular;
-  clicar na lente abre o Google Maps). O texto de busca do mapa está em Ajustes > Loja. Enquanto o mapa carrega (ou se falhar) aparece um mapa desenhado.
-- **WhatsApp**: no computador usa `web.whatsapp.com` (o WhatsApp instalado embaralha emoji). Mensagens editáveis em Ajustes.
-  Marcadores: `{nome}` `{ref}` `{link}` `{itens}`.
-- **CSS**: este projeto usa arquivos `.css` com classes (`vt-` base, `vd-` vitrine, `ad-` painel) em vez de estilos inline, porque o desenho depende de
-  hover, animações e media queries. A base do celular do padrão (seção 4.1) está em `styles.css`.
-- **Estrutura**: a vitrine abre na raiz e o painel em `/admin` (no padrão, o app é a raiz e o catálogo é `/catalogo`).
-- **Modo demonstração**: com `src/config.js` vazio, o site roda com produtos de exemplo e o painel aceita qualquer e-mail/senha, guardando tudo só no
-  navegador. Serve para mostrar o design e testar. Ao preencher a URL e a chave anon, passa a usar o Supabase de verdade.
+- **O formulário** veio de uma conversa com a dona: ela pergunta se o cliente já tem a receita; se não tiver,
+  oferece indicação de oftalmologista ou agendamento. Com receita, pergunta se já usa óculos ou é o primeiro.
+  Pergunta a idade para saber se é multifocal (a partir dos 35, mais comum depois dos 40) e quantos óculos de grau.
+  Ficou assim (editável em Ajustes → Formulário): nome · receita · já usa óculos (só se tem receita) ·
+  quantos óculos de grau · para quem · idade · como prefere seguir (ir à loja ou orçamento pelo WhatsApp) ·
+  forma de pagamento · observação.
+- **Pix:** se o cliente escolhe uma forma de pagamento com a palavra "Pix", o catálogo mostra a chave com
+  botão de copiar, e a chave vai no fim da mensagem. A chave fica em Ajustes → Chave Pix.
+- **Lentes à parte**, conforme a receita: aparece na ficha, na sacola e na mensagem.
+- Sem integração de pagamento (decisão do padrão).
+- Produto esgotado some do catálogo (Preferências pode mudar isso).
 
-## 7. Cuidados de celular e armadilhas
+## 7. Cuidados de celular e armadilhas deste projeto
 
-- Seguem o padrão: `box-sizing`, trava de largura (`overflow-x: clip`), `viewport-fit=cover` sem `maximum-scale`, `dvh`, área segura,
-  campos com 16px, Modal com `createPortal` + `visualViewport` + trava do fundo, botão voltar fechando janelas (pilha em `shared.jsx`),
-  componentes de campo fora do formulário, galeria com todas as fotos lado a lado, número de preço sem quebrar.
-- Animações de "aparecer ao rolar" usam `transform`, mas **só em elementos que nunca contêm janela fixa**. Janelas vão para o `body` por portal.
-- **PowerShell grava BOM** com `Set-Content -Encoding utf8`: quebra `package.json`. Use editor/ferramenta que grave UTF-8 sem BOM.
-- No Windows, caminho longo (>260) quebra o Node. Se a pasta do projeto estiver numa pasta profunda, rode `npm install` numa pasta curta (ex. `C:\vt`).
-- Supabase gratuito **pausa o projeto após 1 semana sem acesso**; a contagem de acessos da vitrine ajuda a manter vivo, mas se o site parar, olhe o painel do Supabase antes de mexer em código.
-- Desligar o cadastro público: Supabase > Authentication > Sign In / Providers > "Allow new users to sign up" desligado. Criar usuário em
-  Authentication > Users > **Create new user** (com senha e "Auto Confirm User"), nunca "Send invitation".
+- Tudo do padrão: box-sizing, trava de largura, `viewport-fit=cover`, dvh, 16px nos campos, Modal com portal,
+  animação de aba só com opacidade, voltar do celular fechando janelas, campos declarados fora dos formulários.
+- Fotos em `paddingTop` (sem `aspect-ratio`) por causa do Safari antigo.
+- O mapa do Google dentro do círculo é um iframe com `pointer-events: none`; tocar no círculo abre o Maps.
+  Se o iframe não carregar, aparece um mapa desenhado de reserva.
+- A trava do fundo tem **contador**: a foto ampliada abre por cima da ficha, e só a última a fechar devolve a rolagem.
 
 ## 8. O que ainda falta
 
-- Contas no nome da cliente (GitHub privado, Supabase, Cloudflare) e preencher `src/config.js`.
-- Fotos reais das armações (hoje o site mostra ilustração enquanto não há foto), fotos de abertura e foto da dona (Ajustes > Fotos do site).
-- Conferir com a dona: horário, texto "sobre", nome do mapa, parcelamento, se mostra preço.
-- Opcional: notificação por Web Push (não implementada: vitrine não tem pedido para avisar), domínio próprio, Google Meu Negócio apontando para o site.
+- Fotos reais dos produtos e das fotos da abertura (Ajustes → Fotos da abertura).
+- Cadastrar a chave Pix.
+- Confirmar os horários com a dona (lidos de um destaque do Instagram: seg–sex 09:30–18:30, sáb 10:00–15:30).
+- Pôr o nome da dona em Ajustes → Usuários (aparece no Início e no histórico do estoque).
+- Testar no iPhone e no Android: cadastro completo com foto, entrada/saída, pedido de teste pelo WhatsApp.
 
 ## 9. Histórico
 
-- **06/10/2026**: projeto criado. Vitrine pública (abertura, hero, categorias, coleção com filtros dinâmicos, guia de rosto, guia de lentes,
-  lente-mapa, detalhe com medidas), painel (produtos, categorias com editor de especificações, ofertas, ajustes, lixeira, acessos, armazenamento),
-  scripts SQL 01 e 02, modo demonstração. Logo: o "V" foi extraído da imagem 3D enviada (fundo de pedra removido por máscara de cor, com
-  preenchimento e suavização do contorno) e salvo como `public/logo-v.png`; o nome "Vértice / Design Óptico" é texto (Jost), não imagem.
-  *Por quê:* tentativa de recriar o V em vetor ficou pesada e infiel; a imagem extraída mantém o volume do original.
+- **06/10/2026 (manhã):** primeira versão (vitrine em `/` e painel em `/admin`, com CSS próprio).
+  A cliente achou feia e a logo tinha sido redesenhada (só o "V" recortado e o nome reescrito em outra fonte).
+- **06/10/2026 (tarde):** **refeito do zero no padrão de sempre** (como Caroline e Fran): app na raiz, catálogo
+  em `/catalogo`, estilos inline. A **logo agora é a imagem original**, só recortada. Novo: estoque com
+  entrada/saída e histórico com desfazer (SQL 03), formulário da ótica editável, chave Pix, círculo da
+  localização mantido. A versão antiga ficou na pasta `_versao-antiga`, fora do repositório.

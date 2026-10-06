@@ -1,19 +1,14 @@
 import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import "./styles.css";
-import { Toasts, Confirmador } from "./shared.jsx";
 
-// A vitrine pública abre na raiz; o painel do dono abre em /admin.
-// São carregados separados: quem só olha a vitrine nunca baixa o código do painel.
+// endereço com "catalogo" abre a vitrine pública; o resto abre o app de gestão (com login).
+// Cada um baixa só o próprio código: o cliente que abre o catálogo não carrega o app inteiro.
+const App = lazy(() => import("./App.jsx"));
 const Catalog = lazy(() => import("./Catalog.jsx"));
-const Admin = lazy(() => import("./App.jsx"));
 
-const painel = /^\/(admin|painel)(\/|$)/i.test(window.location.pathname);
-
+const publico = window.location.pathname.toLowerCase().includes("catalogo");
 createRoot(document.getElementById("root")).render(
-  <>
-    <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#0c0b0a" }} />}>{painel ? <Admin /> : <Catalog />}</Suspense>
-    <Toasts />
-    <Confirmador />
-  </>,
+  <Suspense fallback={<div style={{ minHeight: "100vh", background: "#151618" }} />}>
+    {publico ? <Catalog /> : <App />}
+  </Suspense>
 );
