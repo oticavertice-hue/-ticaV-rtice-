@@ -55,7 +55,7 @@ export default function Ajustes({ cfg, bruto, admin, perfil, sessao, acoes }) {
           <div style={{ ...S.card, overflow: "hidden" }}>
             <Linha primeira icone={ICONES.formulario} titulo="Formulário do catálogo" sub={`${cfg.formulario.length} perguntas antes de enviar pelo WhatsApp`} aoTocar={() => abrir("formulario")} />
             <Linha icone={ICONES.mensagem} titulo="Mensagens do WhatsApp" sub="O texto que o cliente envia" aoTocar={() => abrir("mensagens")} />
-            <Linha icone={ICONES.foto} titulo="Fotos da abertura" sub={cfg.fotos_abertura.length ? `${cfg.fotos_abertura.length} foto(s) passando ao fundo` : "Sem fotos: aparece só a logo"} aoTocar={() => abrir("fotos")} />
+            <Linha icone={ICONES.foto} titulo="Fotos da abertura" sub={cfg.fotos_abertura.length ? `${cfg.fotos_abertura.length} foto(s) escolhidas aqui` : "Usando ABERTURA01 a 06 do Storage"} aoTocar={() => abrir("fotos")} />
             <Linha icone={ICONES.texto} titulo="Textos do catálogo" sub="Frase da abertura, boas-vindas e os quatro quadros" aoTocar={() => abrir("textos")} />
             <Linha icone={ICONES.preferencias} titulo="Preferências" sub="Preços, parcelas, esgotados e aviso de estoque baixo" aoTocar={() => abrir("prefs")} />
           </div>
@@ -434,7 +434,8 @@ function FotosAbertura({ aberto, cfg, acoes, fechar }) {
       rodape={<Botao cheio {...OURO} onClick={() => salvar({ fotos_abertura: fotos }, "Fotos salvas")} disabled={salvando || !!enviando}>{salvando ? "Salvando…" : "Salvar fotos"}</Botao>}>
       <div style={{ ...S.card, padding: 14, fontSize: 13.5, color: C.suave, lineHeight: 1.55, marginBottom: 12 }}>
         Até 6 fotos da loja, das vitrines ou de clientes usando os óculos. Elas trocam a cada 2 segundos, bem suaves, atrás da logo.
-        Sem fotos, a abertura mostra só a logo.
+        Enquanto não houver nenhuma aqui, o catálogo usa as fotos <b style={{ color: C.texto }}>ABERTURA01.jpg a ABERTURA06.jpg</b> que
+        estão na raiz do Storage do Supabase. As que você escolher aqui passam na frente delas.
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 8 }}>
         {fotos.map((u) => (

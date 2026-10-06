@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import * as api from "./api.js";
+import { SUPABASE_URL, BUCKET } from "./config.js";
 import {
   CREDITO_NOME, CREDITO_FONE, mesclarConfig, dinheiro, normalizar, foneFmt, linkWhats, linkMapa, linkRota, linkWaze,
   linkInstagram, aplicar, statusAgora, horariosAgrupados, perguntaVisivel, ehPix, mensagemPedido,
@@ -23,6 +24,10 @@ const SERIF = `"Cinzel", "Times New Roman", Georgia, serif`;
 const FONT = `"Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
 const LOGO = "/logo.jpg";
 const EMBLEMA = "/emblema.jpg";
+/* fotos da abertura subidas direto no Storage, na raiz do bucket: ABERTURA01.jpg até ABERTURA06.jpg.
+   Se a dona escolher fotos em Ajustes → Fotos da abertura, essas passam na frente. */
+const ARQUIVOS = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+const ABERTURA_STORAGE = [1, 2, 3, 4, 5, 6].map((n) => `${ARQUIVOS}ABERTURA0${n}.jpg`);
 
 const CSS = `
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -623,7 +628,21 @@ function ColecaoVazia({ zap }) {
    Abertura: a logo como ela é, com as fotos da loja passando ao fundo
    --------------------------------------------------------------------- */
 function Abertura({ c, irColecao }) {
-  const fotos = c.fotos_abertura || [];
+  const deAjustes = c.fotos_abertura || [];
+  const [doStorage, setDoStorage] = useState([]);
+  /* sem fotos em Ajustes: confere quais ABERTURA0x.jpg existem no Storage (a que não existe é ignorada) */
+  useEffect(() => {
+    if (deAjustes.length) return;
+    let vivo = true;
+    Promise.all(ABERTURA_STORAGE.map((src) => new Promise((ok) => {
+      const img = new Image();
+      img.onload = () => ok(src);
+      img.onerror = () => ok(null);
+      img.src = src;
+    }))).then((l) => { if (vivo) setDoStorage(l.filter(Boolean)); });
+    return () => { vivo = false; };
+  }, [deAjustes.length]);
+  const fotos = deAjustes.length ? deAjustes : doStorage;
   const [i, setI] = useState(0);
   useEffect(() => {
     if (fotos.length < 2) return;
@@ -636,7 +655,7 @@ function Abertura({ c, irColecao }) {
       {/* fundo: as fotos da loja (Ajustes) ou, sem elas, a própria pedra da logo desfocada */}
       {fotos.length ? fotos.map((src, k) => (
         <div key={src} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundImage: `url("${src}")`,
-          backgroundSize: "cover", backgroundPosition: "center", opacity: k === i ? 0.42 : 0, transition: "opacity .75s ease",
+          backgroundSize: "cover", backgroundPosition: "center 28%", opacity: k === i ? 0.62 : 0, transition: "opacity .75s ease",
           animation: k === i ? `${k % 2 ? "vtZoomB" : "vtZoomA"} 7s ease-out both` : "none" }} />
       )) : (
         <div style={{ position: "absolute", top: "-10%", right: "-10%", bottom: "-10%", left: "-10%", backgroundImage: `url("${LOGO}")`,

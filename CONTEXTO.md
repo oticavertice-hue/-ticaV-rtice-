@@ -19,7 +19,8 @@ Duas partes no mesmo código:
 ## 2. Onde fica cada coisa
 
 - **Código:** GitHub, repositório privado `vertice-vitrine`, versão `main`.
-- **Publicação:** Cloudflare Workers, Worker `vertice-vitrine` (tem que ser igual ao `name` do `wrangler.toml`).
+- **Publicação:** Cloudflare Workers, Worker `oticavertice` (tem que ser igual ao `name` do `wrangler.toml`).
+  O nome automático era `ticav-rtice` (vindo do nome do repositório, com acento) e foi trocado.
   Build command `npm run build` · Deploy command `npx wrangler deploy`.
 - **Banco, login e fotos:** Supabase, projeto **`yivugotnoduemjxzroqr`**.
   SQL: `https://supabase.com/dashboard/project/yivugotnoduemjxzroqr/sql/new`
@@ -89,7 +90,12 @@ Regras importantes:
 
 **Catálogo**
 - **Abertura** em tela cheia: a logo como ela é, com as fotos da loja passando ao fundo (2,2 s, transição 0,75 s).
-  Sem fotos, o fundo é a própria pedra da logo, desfocada.
+  As fotos vêm de **`ABERTURA01.jpg` a `ABERTURA06.jpg` na raiz do bucket `vertice`** (a dona subiu 4 pelo painel
+  do Supabase em 06/10). Se ela escolher fotos em Ajustes → Fotos da abertura, essas passam na frente.
+  Sem nenhuma foto, o fundo é a própria pedra da logo, desfocada.
+- A **logo e os ícones** ficam no código (`public/`), publicados pelo Cloudflare, e não no Storage: não gastam o
+  1 GB e a limpeza de arquivos nunca mexe neles. As `ABERTURA0x.jpg` também nunca entram na limpeza
+  (estão fora das pastas `produtos/`, `site/` e `categorias/`).
 - **Boas-vindas** e quatro quadros (consultoria, ZEISS, exame de vista, ajuste) — textos editáveis.
 - **Como funciona** em três passos.
 - **Coleção:** barra fixa com busca e categorias; cartões com foto, marca, especificações, preço, parcelas,
