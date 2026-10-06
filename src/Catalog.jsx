@@ -625,7 +625,7 @@ function ColecaoVazia({ zap }) {
 }
 
 /* ---------------------------------------------------------------------
-   Abertura: a logo como ela é, com as fotos da loja passando ao fundo
+   Abertura: a logo como ela é e, ao lado (embaixo no celular), as fotos da loja num arco
    --------------------------------------------------------------------- */
 function Abertura({ c, irColecao }) {
   const deAjustes = c.fotos_abertura || [];
@@ -650,48 +650,73 @@ function Abertura({ c, irColecao }) {
     return () => clearInterval(t);
   }, [fotos.length]);
 
+  const larga = useTelaLarga();
+  const temFotos = fotos.length > 0;
+
   return (
     <section className="alto" style={{ position: "relative", overflow: "hidden", background: C.carvao, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {/* fundo: as fotos da loja (Ajustes) ou, sem elas, a própria pedra da logo desfocada */}
-      {fotos.length ? fotos.map((src, k) => (
-        <div key={src} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundImage: `url("${src}")`,
-          backgroundSize: "cover", backgroundPosition: "center 28%", opacity: k === i ? 0.62 : 0, transition: "opacity .75s ease",
-          animation: k === i ? `${k % 2 ? "vtZoomB" : "vtZoomA"} 7s ease-out both` : "none" }} />
-      )) : (
-        <div style={{ position: "absolute", top: "-10%", right: "-10%", bottom: "-10%", left: "-10%", backgroundImage: `url("${LOGO}")`,
-          backgroundSize: "cover", backgroundPosition: "center", filter: "blur(38px) brightness(.5) saturate(1.1)", transform: "scale(1.15)" }} />
-      )}
+      {/* fundo: a própria pedra da logo, desfocada */}
+      <div style={{ position: "absolute", top: "-10%", right: "-10%", bottom: "-10%", left: "-10%", backgroundImage: `url("${LOGO}")`,
+        backgroundSize: "cover", backgroundPosition: "center", filter: "blur(38px) brightness(.5) saturate(1.1)", transform: "scale(1.15)" }} />
       <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
-        background: "radial-gradient(90% 70% at 50% 42%, rgba(21,22,24,.15), rgba(21,22,24,.88) 78%), linear-gradient(180deg, rgba(21,22,24,.5), transparent 30%, transparent 70%, rgba(21,22,24,.85))" }} />
+        background: "radial-gradient(90% 70% at 50% 42%, rgba(21,22,24,.1), rgba(21,22,24,.8) 80%)" }} />
       <div style={{ position: "absolute", top: 14, right: 14, bottom: 14, left: 14, border: "1px solid rgba(201,163,91,.28)", borderRadius: 26, pointerEvents: "none" }} />
 
-      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 760, textAlign: "center",
-        padding: "calc(64px + env(safe-area-inset-top,0px)) 22px 92px", animation: "vtFade 1.2s ease both" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 22 }}>
-          <span style={{ width: 22, height: 1, background: C.ouro, flex: "0 0 22px" }} />
-          <span style={{ fontSize: "clamp(9.5px, 2.6vw, 11px)", letterSpacing: "clamp(2.5px, 1vw, 5px)", color: C.ouroClaro, textTransform: "uppercase", fontWeight: 600, whiteSpace: "nowrap" }}>Uberlândia · Shopping Park</span>
-          <span style={{ width: 22, height: 1, background: C.ouro, flex: "0 0 22px" }} />
+      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: temFotos ? 1180 : 760, display: "grid",
+        gridTemplateColumns: temFotos && larga ? "1.15fr .85fr" : "1fr", gap: larga ? 64 : 38, alignItems: "center",
+        padding: `calc(${larga ? 64 : 52}px + env(safe-area-inset-top,0px)) 22px ${temFotos && !larga ? 64 : 96}px`, animation: "vtFade 1.2s ease both" }}>
+        {/* a logo exatamente como veio */}
+        <div style={{ textAlign: "center", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 22 }}>
+            <span style={{ width: 22, height: 1, background: C.ouro, flex: "0 0 22px" }} />
+            <span style={{ fontSize: "clamp(9.5px, 2.6vw, 11px)", letterSpacing: "clamp(2.5px, 1vw, 5px)", color: C.ouroClaro, textTransform: "uppercase", fontWeight: 600, whiteSpace: "nowrap" }}>Uberlândia · Shopping Park</span>
+            <span style={{ width: 22, height: 1, background: C.ouro, flex: "0 0 22px" }} />
+          </div>
+          <div style={{ position: "relative", width: "min(100%, 560px)", margin: "0 auto" }}>
+            <div style={{ position: "absolute", left: "8%", right: "8%", top: "10%", bottom: "10%", borderRadius: "50%",
+              background: "radial-gradient(closest-side, rgba(233,210,159,.28), transparent)", filter: "blur(30px)" }} />
+            <img src={LOGO} alt={c.nome} width="1000" height="768" style={{ position: "relative", display: "block", width: "100%", height: "auto",
+              borderRadius: 20, boxShadow: "0 40px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(201,163,91,.35)" }} />
+          </div>
+          <h1 style={{ fontFamily: SERIF, fontWeight: 500, color: C.creme, fontSize: "clamp(22px, 5.2vw, 34px)", lineHeight: 1.3,
+            letterSpacing: 0.8, margin: "32px auto 0", maxWidth: 620, textWrap: "balance" }}>{c.frase}</h1>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 26 }}>
+            <Botao tipo="ouro" onClick={irColecao}>Ver a coleção</Botao>
+            <Botao tipo="linhaClara" href={linkWhats(c.whatsapp, c.msg_geral)} icone={ICONES.whats}>WhatsApp</Botao>
+          </div>
         </div>
 
-        <div style={{ position: "relative", width: "min(100%, 560px)", margin: "0 auto" }}>
-          <div style={{ position: "absolute", left: "8%", right: "8%", top: "10%", bottom: "10%", borderRadius: "50%",
-            background: "radial-gradient(closest-side, rgba(233,210,159,.28), transparent)", filter: "blur(30px)" }} />
-          <img src={LOGO} alt={c.nome} width="1000" height="768" style={{ position: "relative", display: "block", width: "100%", height: "auto",
-            borderRadius: 20, boxShadow: "0 40px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(201,163,91,.35)" }} />
-        </div>
-
-        <h1 style={{ fontFamily: SERIF, fontWeight: 500, color: C.creme, fontSize: "clamp(22px, 5.2vw, 34px)", lineHeight: 1.3,
-          letterSpacing: 0.8, margin: "34px auto 0", maxWidth: 620, textWrap: "balance" }}>{c.frase}</h1>
-
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 28 }}>
-          <Botao tipo="ouro" onClick={irColecao}>Ver a coleção</Botao>
-          <Botao tipo="linhaClara" href={linkWhats(c.whatsapp, c.msg_geral)} icone={ICONES.whats}>WhatsApp</Botao>
-        </div>
+        {/* as fotos da loja, numa moldura em arco, claras e sem nada por cima */}
+        {temFotos && (
+          <div style={{ position: "relative", width: larga ? "100%" : "min(84%, 380px)", maxWidth: 440, margin: "0 auto" }}>
+            <div style={{ position: "absolute", top: -11, right: -11, bottom: -11, left: -11, borderRadius: "999px 999px 32px 32px",
+              border: "1px solid rgba(201,163,91,.5)", pointerEvents: "none" }} />
+            <div style={{ position: "relative", paddingTop: "125%", borderRadius: "999px 999px 24px 24px", overflow: "hidden", background: C.ardosia,
+              boxShadow: "0 40px 90px rgba(0,0,0,.6)", WebkitMaskImage: "-webkit-radial-gradient(white, black)" }}>
+              {fotos.map((src, k) => (
+                <div key={src} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundImage: `url("${src}")`,
+                  backgroundSize: "cover", backgroundPosition: "center 30%", opacity: k === i ? 1 : 0, transition: "opacity .75s ease",
+                  animation: k === i ? `${k % 2 ? "vtZoomB" : "vtZoomA"} 7s ease-out both` : "none" }} />
+              ))}
+              <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, boxShadow: "inset 0 0 0 1px rgba(233,210,159,.25)",
+                borderRadius: "999px 999px 24px 24px", pointerEvents: "none" }} />
+            </div>
+            {fotos.length > 1 && (
+              <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 22 }}>
+                {fotos.map((_, k) => (
+                  <span key={k} style={{ width: k === i ? 22 : 7, height: 7, borderRadius: 999, background: k === i ? C.ouro : "rgba(233,210,159,.3)", transition: "all .5s" }} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <button onClick={irColecao} aria-label="Descer para a coleção" style={{ position: "absolute", bottom: "calc(26px + env(safe-area-inset-bottom,0px))",
-        left: "50%", marginLeft: -22, width: 44, height: 44, borderRadius: "50%", border: "1px solid rgba(201,163,91,.45)", background: "transparent",
-        color: C.ouroClaro, display: "grid", placeItems: "center", animation: "vtFlutua 2.4s ease-in-out infinite", zIndex: 2 }}>{ICONES.baixo}</button>
+      {!temFotos && (
+        <button onClick={irColecao} aria-label="Descer para a coleção" style={{ position: "absolute", bottom: "calc(26px + env(safe-area-inset-bottom,0px))",
+          left: "50%", marginLeft: -22, width: 44, height: 44, borderRadius: "50%", border: "1px solid rgba(201,163,91,.45)", background: "transparent",
+          color: C.ouroClaro, display: "grid", placeItems: "center", animation: "vtFlutua 2.4s ease-in-out infinite", zIndex: 2 }}>{ICONES.baixo}</button>
+      )}
     </section>
   );
 }
