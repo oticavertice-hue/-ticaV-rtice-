@@ -1,6 +1,6 @@
 # tem que ser IGUAL ao nome do Worker no painel do Cloudflare (costuma ser o nome do repositório),
 # senão o deploy cria um segundo Worker.
-name = "vertice-vitrine"
+name = "oticavertice"
 compatibility_date = "2025-09-01"
 
 [assets]
